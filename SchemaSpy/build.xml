@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<project name="SchemaSpy" default="main" basedir=".">
+   
+    <property name="doc.dir" value="doc" />
+    <property name="schema_spy.file" value="schemaSpy_5.0.0.jar" />
+    <property name="schema_spy.download" value="http://sourceforge.net/projects/schemaspy/files/schemaspy/SchemaSpy%205.0.0/${schema_spy.file}/download" />
+
+    <property name="jdbc.pgsql.file" value="postgresql-9.3-1100.jdbc41.jar" />
+    <property name="jdbc.pgsql.download" value="http://jdbc.postgresql.org/download/${jdbc.pgsql.file}" />
+    
+    <property name="jdbc.mysql.file" value="mysql-connector-java-5.1.27-bin.jar" />
+    <property name="jdbc.mysql.download" value="http://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-5.1.27.zip" />
+
+    <property file="build.properties" />
+
+    <if>
+        <equals arg1="${db.type}" arg2="pgsql" trim="true" />
+        <then>        
+           <property name="jdbc.connector" value="${jdbc.pgsql.file}" />
+        </then>
+        <else>     
+            <property name="jdbc.connector" value="${jdbc.mysql.file}" />
+        </else>
+    </if>
+
+    <target name="schemaspy.jdbc.mysql.download">   
+        <httpget url="${jdbc.mysql.download}" followRedirects="true" filename="jdbc.mysql.zip" dir="."/>
+        <unzip file="jdbc.mysql.zip" todir="."/>
+        <copy file="mysql-connector-java-5.1.27/${jdbc.mysql.file}" tofile="${jdbc.mysql.file}" overwrite="true"/>
+        <delete file="jdbc.mysql.zip" />
+        <delete dir="mysql-connector-java-5.1.27" includeemptydirs="true"   /> 
+    </target>
+
+    <target name="schemaspy.install">        
+        <httpget url="${schema_spy.download}" followRedirects="true" filename="${schema_spy.file}" dir="."/>
+        <if>
+            <equals arg1="${db.type}" arg2="pgsql" trim="true" />
+            <then>        
+               <httpget url="${jdbc.pgsql.download}" followRedirects="true" filename="${jdbc.connector}" dir="."/>
+            </then>
+            <else>     
+                <phingcall target="schemaspy.jdbc.mysql.download" />
+            </else>
+        </if>        
+    </target>
+
+    <target name="schemaspy.run">
+        <exec command="java -jar ${schema_spy.file} -dp ${jdbc.connector} -all -t ${db.type}  -host ${db.host} -db ${db.name}  -u ${db.user} -p ${db.pass} -o ${doc.dir}/schemaSpy" />
+    </target>
+</project>
