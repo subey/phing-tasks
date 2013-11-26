@@ -45,6 +45,6 @@
     </target>
 
     <target name="schemaspy.run">
-        <exec command="java -jar ${schema_spy.file} -dp ${jdbc.connector} -all -t ${db.type}  -host ${db.host} -db ${db.name}  -u ${db.user} -p ${db.pass} -o ${doc.dir}/schemaSpy" />
+        <exec command="java -jar ${schema_spy.file} -dp ${jdbc.connector} -all -t ${db.type}  -host ${db.host}  -p ${db.port} -db ${db.name}  -u ${db.user} -p ${db.pass} -o ${doc.dir}/schemaSpy" passthru="true" checkreturn="true" />
     </target>
 </project>
